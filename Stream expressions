@@ -1,0 +1,121 @@
+package org.example;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+public class StreamMain {
+    public static void main(String[] args){
+        List<String> list = Arrays.asList("Team", "Group","Policy","Group",
+                "entity","User","Scope","Test");
+
+        List<List<String>> multiList = Arrays.asList(Arrays.asList("Chennai", "Kochi","Pune"),
+                Arrays.asList("Kochi",
+                "Delhi","Mumbai"), Arrays.asList("Pune","Chennai","Coimbatore"));
+
+        // 1. Create sequential and parallel streams.
+        list.stream(); // sequential stream
+        list.parallelStream(); // parallel stream
+
+        // 2.  Filter start with "T"
+        list.stream().filter(i->i.startsWith("T")).forEach(System.out::println);
+        /*Team
+          Test*/
+
+        //3. Map (Transform elements) to length.
+        List<Integer> result = list.stream().map(i->i.length()).collect(Collectors.toList());
+        System.out.println(result);
+        //[4, 5, 6, 5, 6, 4, 5, 4]
+
+        // 4. FlatMap (Flatten nested streams) Find unique elements from multiple lists
+        Set<String> locations = multiList.stream().flatMap(Collection::stream).collect(
+                Collectors.toSet());
+        System.out.println(locations);
+        //[Delhi, Coimbatore, Chennai, Kochi, Pune, Mumbai]
+
+        //5. Distinct get distinct elements
+        list.stream().distinct().forEach(System.out::println);
+        /*
+        Team
+        Group
+        Policy
+        entity
+        User
+        Scope
+        Test
+         */
+
+        //6.Sorted
+        List<Integer> sortedItems = Arrays.asList(1,6,0,7,5,9,20,11).stream()
+                .sorted((a,b)->b.compareTo(a)).collect(Collectors.toList());
+        System.out.println(sortedItems);
+        //[20, 11, 9, 7, 6, 5, 1, 0]    (.sorted(Comparator.reverseOrder()))
+
+       // 7. Limit & Skip
+        List<Integer> limited = sortedItems.stream().skip(2).limit(3).collect(Collectors.toList());
+        System.out.println(limited);
+        //[9, 7, 6]
+
+        // 8. Reduce find sum , min , max
+        // count , findfirst, findany
+        int a = sortedItems.stream().reduce(0,Integer::sum);
+        int b= sortedItems.stream().reduce(0,Integer::min);
+        int c = sortedItems.stream().reduce(0,Integer::max);
+        long count = sortedItems.stream()
+                .count();
+        Integer first = sortedItems.stream().findFirst().get();
+        Optional<Integer> any = sortedItems.stream().findAny();
+        System.out.println(a +", " +b +", "+ c+ ", "+count+ ", "+first+", "+any);
+        //59, 0, 20, 8, 20, Optional[20]
+
+        // 9. Collect to map
+        Map<String,Integer> map = list.stream().distinct().collect(Collectors.toMap(
+                name->name,
+                name -> name.length() //String :: length
+        ));
+        System.out.println(map);
+        // {Policy=6, Group=5, User=4, Scope=5, Test=4, Team=4, entity=6}
+
+        // 10. GroupingBy groupby length
+        Map<Integer,List<String>> groups = list.stream().collect(Collectors.groupingBy(
+               String :: length
+        ));
+        System.out.println(groups);
+        //{4=[Team, User, Test], 5=[Group, Group, Scope], 6=[Policy, entity]}
+
+        // 11. PartitioningBy (true/false)
+        Map<Boolean,List<String>> partitions = list.stream().collect(Collectors.partitioningBy(
+                name -> name.length() > 4
+        ));
+        System.out.println(partitions);
+        // {false=[Team, User, Test], true=[Group, Policy, Group, entity, Scope]}
+
+        //12. AllMatch, AnyMatch, NoneMatch
+        System.out.println(
+                "AllMatch: " + list.stream().allMatch(name-> name.length()>3) +'\n'+
+                "AnyMatch: " + list.stream().anyMatch(name-> name.length()>10) +'\n'
+                + "NoneMatch: " + list.stream().noneMatch(name-> name.length()>10) +'\n'
+
+        );
+        /*
+        AllMatch: true
+        AnyMatch: false
+        NoneMatch: true
+         */
+        //13. Peek (for debugging)
+        List<String> peekList =list.stream().peek(System.out::println)
+                .filter(i->i.length()>5).collect(Collectors.toList());
+
+        // 14. Joining Strings
+        System.out.println(list.stream().collect(Collectors.joining(", ")));
+        //Team, Group, Policy, Group, entity, User, Scope, Test
+
+        IntStream.range(1, 5).forEach(System.out::print); // 1234
+        System.out.println(IntStream.of(1, 2, 3).sum()); // 6
+    }
+}
